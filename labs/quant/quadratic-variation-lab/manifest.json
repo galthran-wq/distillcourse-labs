@@ -1,0 +1,57 @@
+{
+  "checkpoints": {
+    "euler-maruyama": {
+      "atol": 1e-09,
+      "inputs_code": "L, T = 64, 1.0\nmu, sigma = float(rng.uniform(-0.5, 1.5)), float(rng.uniform(0.2, 1.0))\ninputs = (mu, sigma, float(rng.uniform(0.5, 100.0)), np.sqrt(T / L) * rng.standard_normal((4, L)), T / L)\n",
+      "kind": "exact",
+      "seed": 206
+    },
+    "ito-formula-check": {
+      "atol": 1e-09,
+      "inputs_code": "# f(t, x) = t x\u00b2 + x\u00b3: a genuine f_t, and dt terms that do not cancel.\nf_t = lambda t, x: x**2\nf_x = lambda t, x: 2 * t * x + 3 * x**2\nf_xx = lambda t, x: 2 * t + 6 * x\nn, T = 256, float(rng.uniform(0.5, 2.0))\nt = np.linspace(0.0, T, n + 1)\ndW = np.sqrt(T / n) * rng.standard_normal((4, n))\npaths = np.concatenate([np.zeros((4, 1)), np.cumsum(dW, axis=-1)], axis=-1)\n# One path, then a batch of three: the batch must come back as (3, M).\ninputs = (f_t, f_x, f_xx, t, paths[0], paths[1:], 4)\n",
+      "kind": "exact",
+      "seed": 205
+    },
+    "ito-vs-stratonovich": {
+      "atol": 1e-09,
+      "inputs_code": "n, T = 512, float(rng.uniform(0.5, 2.0))\ninputs = (np.sqrt(T / n) * rng.standard_normal(n), 8)\n",
+      "kind": "exact",
+      "seed": 204
+    },
+    "qv-sigma": {
+      "holdout": "data/holdout_paths.csv",
+      "kind": "metric",
+      "metric": "rmse",
+      "threshold": -3.5
+    },
+    "qv-study": {
+      "atol": 1e-09,
+      "inputs_code": "n, T = 2048, float(rng.uniform(0.5, 2.0))\ndW = np.sqrt(T / n) * rng.standard_normal(n)\nc = float(rng.uniform(-2.0, 2.0))\nS0, mu, sigma = float(rng.uniform(20.0, 200.0)), float(rng.uniform(-0.1, 0.3)), float(rng.uniform(0.1, 0.8))\ninputs = (dW, T, c, S0, mu, sigma, (256, 64, 16, 4, 1))\n",
+      "kind": "exact",
+      "seed": 203
+    },
+    "sampled-qv": {
+      "atol": 1e-09,
+      "inputs_code": "n, T = 512, float(rng.uniform(0.5, 2.0))\nt = np.linspace(0.0, T, n + 1)\nsmooth = np.sin(3.0 * t) + t**2\ndW = np.sqrt(T / n) * rng.standard_normal((4, n))\npaths = np.concatenate([np.zeros((4, 1)), np.cumsum(dW, axis=-1)], axis=-1)\n# One path, then a batch of three: the batch must come back one number per row.\ninputs = (smooth, paths[0], paths[1:], (1, 4, 32, 128))\n",
+      "kind": "exact",
+      "seed": 202
+    },
+    "scaled-walk": {
+      "atol": 1e-09,
+      "inputs_code": "n = int(rng.choice([96, 128, 160]))\ninputs = (rng.integers(0, 2, size=n), float(rng.uniform(0.5, 3.0)))\n",
+      "kind": "exact",
+      "seed": 201
+    },
+    "strong-order": {
+      "atol": 1e-09,
+      "inputs_code": "N, T, M = 256, 1.0, 300\nmu, sigma = float(rng.uniform(0.5, 2.0)), float(rng.uniform(0.5, 1.2))\ninputs = (mu, sigma, 1.0, np.sqrt(T / N) * rng.standard_normal((M, N)), T / N, (1, 2, 4, 8, 16))\n",
+      "kind": "exact",
+      "seed": 207
+    },
+    "why-left-endpoint": {
+      "kind": "review"
+    }
+  },
+  "content_version": "2406abf472ece0fd661615dce4cc3a5c99997b2d1d0ef764dff3c1dc27bc6202",
+  "lab": "quant/quadratic-variation-lab"
+}

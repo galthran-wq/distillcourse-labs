@@ -1,0 +1,57 @@
+{
+  "checkpoints": {
+    "auc": {
+      "atol": 1e-09,
+      "inputs_code": "# Quantized scores: heavy ties on purpose \u2014 position-based ranks\n# cannot match the tie-averaged reference.\nscores = np.round(rng.random(80), 1)\ny = (rng.random(80) < 0.55).astype(float)\ninputs = (y, scores)\n",
+      "kind": "exact",
+      "seed": 29
+    },
+    "beat-auc": {
+      "holdout": "data/holdout_X.csv",
+      "kind": "metric",
+      "metric": "roc_auc",
+      "threshold": 0.97
+    },
+    "fit-gd": {
+      "atol": 1e-06,
+      "inputs_code": "X = rng.normal(size=(80, 3))\nw_true = np.array([2.0, -1.0, 0.5])\ny = (rng.random(80) < 1.0 / (1.0 + np.exp(-(X @ w_true)))).astype(float)\ninputs = (X, y, 0.5, 250)\n",
+      "kind": "exact",
+      "seed": 19
+    },
+    "grad": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(50, 4))\nw = rng.normal(size=4)\nb = -0.3\ny = (rng.random(50) > 0.5).astype(float)\ninputs = (w, b, X, y)\n",
+      "kind": "exact",
+      "seed": 17
+    },
+    "l2": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(40, 6))\nw = rng.normal(size=6)\nb = 0.7\ny = (rng.random(40) > 0.5).astype(float)\ninputs = (w, b, X, y, 0.1)\n",
+      "kind": "exact",
+      "seed": 23
+    },
+    "log-loss": {
+      "atol": 1e-09,
+      "inputs_code": "# Rows scaled 20x push |logits| past 300: a log-loss written as\n# log(sigmoid) instead of logaddexp goes non-finite here and can\n# never match the expected value.\nX = rng.normal(size=(60, 5))\nX[:12] *= 20.0\nw = rng.normal(0.0, 4.0, size=5)\nb = 0.5\ny = (rng.random(60) > 0.4).astype(float)\ninputs = (w, b, X, y)\n",
+      "kind": "exact",
+      "seed": 13
+    },
+    "newton": {
+      "atol": 1e-06,
+      "inputs_code": "X = rng.normal(size=(60, 3))\nw_true = np.array([1.2, -0.8, 0.4])\ny = (rng.random(60) < 1.0 / (1.0 + np.exp(-(X @ w_true + 0.3)))).astype(float)\ninputs = (X, y, 8)\n",
+      "kind": "exact",
+      "seed": 31
+    },
+    "sigmoid": {
+      "atol": 1e-09,
+      "inputs_code": "inputs = (rng.normal(0.0, 3.0, size=40),)\n",
+      "kind": "exact",
+      "seed": 11
+    },
+    "why-not-mse": {
+      "kind": "review"
+    }
+  },
+  "content_version": "c1567cf810dd0635a1830d8a59a335cb0100229339bbd40a2cf18d42da8e6d9b",
+  "lab": "classical-ml-interview/logreg-lab"
+}

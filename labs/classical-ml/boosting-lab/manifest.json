@@ -1,0 +1,57 @@
+{
+  "checkpoints": {
+    "adaboost-round": {
+      "atol": 1e-09,
+      "inputs_code": "# Round 3 of the AdaBoost lesson's ten-point example - the round\n# the lesson set as an exercise, so the notebook's referees (rounds\n# 1 and 2) never print these outputs. The weights entering are\n# round 2's, non-uniform, so bugs that only show on non-uniform\n# weights are visible. h is the stump +1 if x2 > 5.\nw = np.array([1/22, 1/22, 7/66, 7/66, 7/66, 1/6, 1/6, 1/6, 1/22, 1/22])\ny = np.array([1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0])\nh = np.array([-1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 1.0, -1.0])\ninputs = (w, y, h)\n",
+      "kind": "exact",
+      "seed": 707
+    },
+    "beat-benchmark": {
+      "holdout": "data/spam_holdout_X.csv",
+      "kind": "metric",
+      "metric": "rmse",
+      "threshold": -0.235
+    },
+    "boost-ls": {
+      "atol": 1e-06,
+      "inputs_code": "# A smooth term, a step and a linear term: enough structure that 25\n# rounds keep finding different splits.\nX = rng.normal(size=(60, 4))\ny = (np.sin(X[:, 0]) + 1.2 * (X[:, 1] > 0.5) - 0.7 * X[:, 2]\n     + 0.3 * rng.normal(size=60))\ninputs = (X, y, 25, 0.3)\n",
+      "kind": "exact",
+      "seed": 202
+    },
+    "logit-boost": {
+      "atol": 1e-07,
+      "inputs_code": "# A curved boundary with label noise: separable nowhere, so the\n# deviance keeps a gradient everywhere.\nX = rng.normal(size=(80, 3))\ny = ((X[:, 0] + 0.8 * X[:, 1] ** 2 - 0.5\n      + 0.4 * rng.normal(size=80)) > 0).astype(float)\ninputs = (X, y, 40, 0.3)\n",
+      "kind": "exact",
+      "seed": 505
+    },
+    "newton-leaf": {
+      "atol": 1e-07,
+      "inputs_code": "# Same flavor of problem as logit-boost, fresh draw, with a real\n# lambda so the penalty is visible in every leaf.\nX = rng.normal(size=(100, 3))\ny = ((0.9 * X[:, 0] - X[:, 1] + 0.5 * X[:, 2] ** 2\n      + 0.4 * rng.normal(size=100)) > 0.2).astype(float)\ninputs = (X, y, 30, 0.3, 1.0)\n",
+      "kind": "exact",
+      "seed": 606
+    },
+    "shrinkage-curves": {
+      "atol": 1e-06,
+      "inputs_code": "# A Friedman-flavored surface: smooth term, step, interaction, noise.\ndef make(n, rng):\n    X = rng.uniform(-2, 2, size=(n, 5))\n    y = (np.sin(1.5 * X[:, 0]) + (X[:, 1] > 0.3)\n         + 0.5 * X[:, 2] * X[:, 3] + 0.3 * rng.normal(size=n))\n    return X, y\nX_tr, y_tr = make(240, rng)\nX_te, y_te = make(160, rng)\ninputs = (X_tr, y_tr, X_te, y_te, 120, (1.0, 0.1))\n",
+      "kind": "exact",
+      "seed": 404
+    },
+    "staged-predict": {
+      "atol": 1e-06,
+      "inputs_code": "# A hand-built model: staged prediction is pure accumulation, so\n# the stumps need not come from any fit.\nstumps = np.column_stack([\n    rng.integers(0, 4, size=12).astype(float),\n    rng.normal(size=12),\n    rng.normal(size=12),\n    rng.normal(size=12)])\nXq = rng.normal(size=(9, 4))\ninputs = (0.7, stumps, 0.4, Xq)\n",
+      "kind": "exact",
+      "seed": 303
+    },
+    "stump-fit": {
+      "atol": 1e-09,
+      "inputs_code": "# Two continuous features and one coarse integer-valued one: the\n# coarse column has duplicated values AND carries the winning\n# split on this draw, so midpoint placement and tie handling are\n# both visible in the output.\nX = np.column_stack([rng.normal(size=40),\n                     rng.uniform(-2, 2, size=40),\n                     rng.integers(0, 5, size=40).astype(float)])\ny = 1.5 * (X[:, 1] > 0.4) - 0.5 * X[:, 2] + 0.2 * rng.normal(size=40)\nXq = np.column_stack([rng.normal(size=12),\n                      rng.uniform(-2, 2, size=12),\n                      rng.integers(0, 5, size=12).astype(float)])\ninputs = (X, y, Xq)\n",
+      "kind": "exact",
+      "seed": 8
+    },
+    "why-small-nu": {
+      "kind": "review"
+    }
+  },
+  "content_version": "1d1f18bb75d2242b8848275161c2ebb7f9e399a840538041e960142acd0e3843",
+  "lab": "classical-ml/boosting-lab"
+}

@@ -1,0 +1,57 @@
+{
+  "checkpoints": {
+    "autoencoder-forward-loss": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(6, 5))\nW = rng.normal(0.0, 0.6, size=(5, 3))\nb1 = rng.normal(0.0, 0.2, size=3)\nb2 = rng.normal(0.0, 0.2, size=5)\ninputs = (X, W, b1, b2)\n",
+      "kind": "exact",
+      "seed": 5505
+    },
+    "autoencoder-gradient": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(8, 5))\nW = rng.normal(0.0, 0.6, size=(5, 3))\nb1 = rng.normal(0.0, 0.2, size=3)\nb2 = rng.normal(0.0, 0.2, size=5)\ninputs = (X, W, b1, b2)\n",
+      "kind": "exact",
+      "seed": 5606
+    },
+    "iforest-score": {
+      "atol": 1e-06,
+      "inputs_code": "X = rng.normal(size=(2000, 8))\nX[:20] = rng.normal(4.0, 0.5, size=(20, 8)) * rng.choice([-1.0, 1.0], size=(20, 8))\nX_score = np.vstack([X[:20], X[-40:]])\ninputs = (X, X_score, 50, 128, np.random.default_rng(int(rng.integers(1_000_000))))\n",
+      "kind": "exact",
+      "seed": 5404
+    },
+    "itree-build": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(64, 2))\nX[:3] += rng.uniform(4.0, 6.0, size=(3, 2))\ninputs = (X, 6, np.random.default_rng(int(rng.integers(1_000_000))))\n",
+      "kind": "exact",
+      "seed": 5202
+    },
+    "order-the-shortlist": {
+      "holdout": "data/ulb_shortlist.csv.gz",
+      "kind": "metric",
+      "metric": "roc_auc",
+      "threshold": 0.76
+    },
+    "path-length": {
+      "atol": 1e-09,
+      "inputs_code": "# A hand-made tree over 3 columns: external nodes at depths 1 to 4,\n# holding 1 to 6 rows, so several of them are truncated.\ndef node(depth):\n    if depth == 4 or (depth >= 1 and rng.random() < 0.3):\n        return {\"size\": int(rng.integers(1, 7))}\n    return {\"attr\": int(rng.integers(3)), \"split\": float(rng.normal(0.0, 0.7)),\n            \"left\": node(depth + 1), \"right\": node(depth + 1)}\ntree = node(0)\nX = rng.normal(size=(50, 3))\ninputs = (X, tree)\n",
+      "kind": "exact",
+      "seed": 5303
+    },
+    "path-normaliser": {
+      "atol": 1e-09,
+      "inputs_code": "ns = [0, 1, 2, 3, 16, 135, 256, 4096]\nh = np.round(rng.uniform(0.5, 16.0, 40), 3)\ninputs = (ns, h, 256)\n",
+      "kind": "exact",
+      "seed": 5101
+    },
+    "train-autoencoder": {
+      "atol": 1e-06,
+      "inputs_code": "# Genuine rows near a curve in 6 columns with unrelated units; a few\n# frauds off the curve, in training and among the rows scored.\ndef curve(m):\n    t = rng.uniform(-1.0, 1.0, m)\n    return (np.c_[t, t ** 2, np.sin(3 * t), 0.5 * t, -t ** 2, np.cos(2 * t)]\n            * [1.0, 2.0, 0.5, 4.0, 1.0, 3.0] + [0.0, 3.0, -1.0, 5.0, 0.0, 2.0]\n            + rng.normal(0.0, 0.05, (m, 6)))\nX_train = curve(400)\ny_train = np.zeros(400)\ny_train[:24] = 1.0\nX_train[:24] += rng.normal(0.0, 1.5, (24, 6))\nX_score = curve(40)\nX_score[:10] += rng.normal(0.0, 1.5, (10, 6))\ninputs = (X_train, y_train, X_score, 2, 0.1, 15, 32, 7)\n",
+      "kind": "exact",
+      "seed": 5707
+    },
+    "why-auc-flatters": {
+      "kind": "review"
+    }
+  },
+  "content_version": "fd93e65a300e6e93fffa62ba22ef581cfb168ddd9e28f6b32c08ef88c417e6c7",
+  "lab": "fraud-ml/anomaly-scorers-lab"
+}

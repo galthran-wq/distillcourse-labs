@@ -1,0 +1,51 @@
+{
+  "checkpoints": {
+    "calendar-flags": {
+      "atol": 0.5,
+      "inputs_code": "start = np.datetime64(\"2018-01-01T00:00:00\")\nrandom = start + rng.integers(0, 730 * 86400, 180).astype(\"timedelta64[s]\")\n# Hour and weekday boundaries: 05:59:59, 06:00:00, 06:59:59 on a Friday,\n# Saturday, Sunday and Monday.\nedges = np.array([f\"2018-06-{d:02d}T{hms}\" for d in (1, 2, 3, 4)\n                  for hms in (\"05:59:59\", \"06:00:00\", \"06:59:59\", \"00:00:00\", \"23:59:59\")],\n                 dtype=\"datetime64[s]\")\nts = np.concatenate([random, edges])\ninputs = (ts[rng.permutation(len(ts))],)\n",
+      "kind": "exact",
+      "seed": 3101
+    },
+    "conditional-aggregates": {
+      "atol": 1e-06,
+      "inputs_code": "# The seven-payment card (card 0, hours from 1 Jan 2018), then 300\n# payments of eight more cards; rows shuffled.\nt7 = np.array([18*60+20, 20*60+35, 22*60+30, 24*60+50, 43*60+18, 47*60+45, 48*60]) * 60\ntype7 = np.array([\"POS\", \"POS\", \"ATM\", \"POS\", \"POS\", \"POS\", \"POS\"])\ncountry7 = np.array([\"LU\", \"LU\", \"LU\", \"DE\", \"DE\", \"DE\", \"LU\"])\namount7 = np.array([250.0, 400.0, 250.0, 50.0, 100.0, 150.0, 10.0])\nn = 300\ncard = np.r_[np.zeros(7, int), rng.integers(1, 9, n)]\nt = np.r_[t7, rng.integers(0, 10 * 24 * 4, n) * 900]\namount = np.r_[amount7, np.round(rng.lognormal(3.5, 0.8, n), 2)]\ntx_type = np.r_[type7, rng.choice([\"POS\", \"ATM\", \"ONLINE\"], n, p=[0.6, 0.2, 0.2])]\ncountry = np.r_[country7, rng.choice([\"LU\", \"DE\", \"FR\"], n, p=[0.5, 0.3, 0.2])]\np = rng.permutation(len(t))\ninputs = (card[p], t[p], amount[p], tx_type[p], country[p], 86400)\n",
+      "kind": "exact",
+      "seed": 3303
+    },
+    "customer-windows": {
+      "atol": 1e-06,
+      "inputs_code": "n = 500\ncard = rng.integers(0, 15, n)\n# Whole hours over 40 days: payments exactly 1 or 7 days apart and\n# same-card payments at the same second both occur.\nt = rng.integers(0, 40 * 24, n) * 3600\namount = np.round(rng.lognormal(3.5, 0.8, n), 2)\ninputs = (card, t, amount)\n",
+      "kind": "exact",
+      "seed": 3202
+    },
+    "feature-lift": {
+      "holdout": "data/holdout_log.csv.gz",
+      "kind": "metric",
+      "metric": "roc_auc",
+      "threshold": 0.855
+    },
+    "find-the-leak": {
+      "kind": "review"
+    },
+    "periodic-time-flag": {
+      "atol": 1e-06,
+      "inputs_code": "m, k = 60, 20\nhabit = rng.uniform(0, 24, m)\nhabit[:20] = rng.uniform(-3, 3, 20) % 24          # a third of the cards straddle midnight\nconc = rng.uniform(0.5, 8, m)\nn_times = rng.integers(2, k + 1, m)\nhours = np.full((m, k), np.nan)\nfor r in range(m):\n    draws = rng.vonmises(habit[r] * np.pi / 12, conc[r], n_times[r]) % (2 * np.pi)\n    hours[r, :n_times[r]] = np.round(draws * 12 / np.pi, 4)\nquery = (habit + rng.normal(0, 4, m)) % 24\ninputs = (hours, query, 0.9)\n",
+      "kind": "exact",
+      "seed": 3505
+    },
+    "point-in-time-join": {
+      "atol": 0.5,
+      "inputs_code": "# A feature log of 12 entities, one record per half hour at most,\n# shuffled; rows on the same half-hour grid (ties with the stamps),\n# some before an entity's first record, some for entities never logged.\nents, stamps = [], []\nfor e in range(12):\n    s = np.sort(rng.choice(200, rng.integers(5, 25), replace=False)) * 1800\n    ents.append(np.full(len(s), e)); stamps.append(s)\nlog_entity, log_t = np.concatenate(ents), np.concatenate(stamps)\np = rng.permutation(len(log_t))\nlog_entity, log_t = log_entity[p], log_t[p]\nrow_entity = rng.integers(0, 14, 300)\nrow_t = rng.integers(0, 210, 300) * 1800 + rng.choice([0, 0, 0, 600], 300)\ninputs = (row_entity, row_t, log_entity, log_t)\n",
+      "kind": "exact",
+      "seed": 3606
+    },
+    "terminal-risk-delayed": {
+      "atol": 1e-06,
+      "inputs_code": "n = 900\nterm = rng.integers(0, 12, n)\nt = rng.integers(0, 60 * 24, n) * 3600\nstart = rng.integers(5, 50, 12)                    # each terminal's compromise day\nfraud = ((t // 86400 >= start[term]) & (t // 86400 < start[term] + 10)).astype(float)\nfraud[rng.random(n) < 0.02] = 1.0\n# Queries on the same hourly grid (window edges fall on payments), plus\n# two terminals with no payments at all.\nq_term = rng.integers(0, 14, 300)\nq_t = rng.integers(0, 62 * 24, 300) * 3600\np = rng.permutation(n)\ninputs = (term[p], t[p], fraud[p], q_term, q_t, 5)\n",
+      "kind": "exact",
+      "seed": 3404
+    }
+  },
+  "content_version": "5ef31736ee2bc51bd1972f12bb99ac0ba2ed116aef0d2e74a8d8d8a4b75bcb0e",
+  "lab": "fraud-ml/point-in-time-feature-lab"
+}

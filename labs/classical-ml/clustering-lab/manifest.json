@@ -1,0 +1,63 @@
+{
+  "checkpoints": {
+    "assign-step": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(80, 2)) * 2.0\nC = rng.normal(size=(6, 2)) * 2.0\ninputs = (X, C)\n",
+      "kind": "exact",
+      "seed": 41
+    },
+    "e-step": {
+      "atol": 1e-06,
+      "inputs_code": "# The last point sits hundreds of standard deviations from every\n# component: its densities underflow to exactly 0.0 in float64, so an\n# implementation that exponentiates before normalizing produces nan\n# and cannot match.\nX = np.vstack([rng.normal(size=(60, 2)) * 2.0, [[500.0, -500.0]]])\npi = np.array([0.5, 0.3, 0.2])\nmu = np.array([[-2.0, 0.0], [2.0, 1.0], [0.0, -2.0]])\nSigma = np.array([[[1.0, 0.3], [0.3, 0.8]],\n                  [[0.5, 0.0], [0.0, 1.5]],\n                  [[2.0, -0.4], [-0.4, 0.6]]])\ninputs = (X, pi, mu, Sigma)\n",
+      "kind": "exact",
+      "seed": 59
+    },
+    "em-monotone": {
+      "atol": 1e-06,
+      "inputs_code": "# Old Faithful, standardized, from a deliberately crossed start: each\n# mean begins inside the wrong regime, so EM has visible work to do.\nraw = np.loadtxt(\"data/faithful.csv\", delimiter=\",\")\nX = (raw - raw.mean(0)) / raw.std(0)\npi0 = np.array([0.5, 0.5])\nmu0 = np.array([[-1.0, 1.0], [1.0, -1.0]])\nSigma0 = np.stack([np.eye(2), np.eye(2)])\ninputs = (X, pi0, mu0, Sigma0, 50)\n",
+      "kind": "exact",
+      "seed": 67
+    },
+    "image-vq": {
+      "atol": 1e-06,
+      "inputs_code": "img = np.load(\"data/photo.npy\").astype(np.float64) / 255.0\ninputs = (img, 4, 15)\n",
+      "kind": "exact",
+      "seed": 3
+    },
+    "kmeanspp": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(60, 2))\nX[:20] += np.array([6.0, 0.0])\nX[20:40] -= np.array([6.0, 0.0])\ninputs = (X, 4, np.random.default_rng(1234))\n",
+      "kind": "exact",
+      "seed": 53
+    },
+    "lloyd-loop": {
+      "atol": 1e-06,
+      "inputs_code": "# Three well-separated groups; C0 takes one point from each, so the\n# loop exercises plain alternation, not the repair path.\nX = rng.normal(size=(120, 2))\nX[:40] += np.array([4.0, 0.0])\nX[40:80] += np.array([-4.0, 1.0])\nC0 = X[[0, 40, 80]].copy()\ninputs = (X, C0, 25)\n",
+      "kind": "exact",
+      "seed": 47
+    },
+    "m-step": {
+      "atol": 1e-09,
+      "inputs_code": "X = rng.normal(size=(50, 2)) * 1.5\nR = rng.random((50, 3))\nR = R / R.sum(1, keepdims=True)\ninputs = (X, R)\n",
+      "kind": "exact",
+      "seed": 61
+    },
+    "recover-centers": {
+      "holdout": "data/blobs.csv",
+      "kind": "metric",
+      "metric": "rmse",
+      "threshold": -0.2
+    },
+    "singularity-hunt": {
+      "kind": "review"
+    },
+    "update-step": {
+      "atol": 1e-09,
+      "inputs_code": "# Clusters 2 and 4 are empty by construction: the repair path is part\n# of the checkpoint, and with two dead centroids the claimed-point\n# rule (the second repair must skip the point the first one took) is\n# graded too, not left to chance.\nX = rng.normal(size=(40, 2)) * 3.0\nlabels = rng.integers(0, 5, size=40)\nlabels[labels == 2] = 1\nlabels[labels == 4] = 0\ninputs = (X, labels, 5)\n",
+      "kind": "exact",
+      "seed": 43
+    }
+  },
+  "content_version": "3e9aa1e95c26d266bda9db0df1af474c55c357c0949f8580031044f47237d39e",
+  "lab": "classical-ml/clustering-lab"
+}

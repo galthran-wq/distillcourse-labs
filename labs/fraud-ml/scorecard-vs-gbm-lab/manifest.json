@@ -1,0 +1,51 @@
+{
+  "checkpoints": {
+    "beat-holdout-week": {
+      "holdout": "data/holdout_week.csv.gz",
+      "kind": "metric",
+      "metric": "roc_auc",
+      "threshold": 0.83
+    },
+    "chi2-binning-compare": {
+      "atol": 1e-06,
+      "inputs_code": "genuine = rng.integers(100, 3000, 7)\nfraud = rng.integers(5, 200, 7)\ngroupings = [rng.permutation(np.r_[0, 1, 2, rng.integers(0, 3, 4)]) for _ in range(4)]\ninputs = (genuine, fraud, groupings)\n",
+      "kind": "exact",
+      "seed": 3303
+    },
+    "equal-frequency-bins": {
+      "atol": 1e-09,
+      "inputs_code": "# A long-tailed amount with 40% of the rows at exactly zero: the\n# first three quantiles coincide, and the zeros sit on an edge.\nx = np.r_[np.zeros(160), np.round(rng.lognormal(3.0, 1.0, 240), 2)]\nx = x[rng.permutation(len(x))]\ninputs = (x, 8)\n",
+      "kind": "exact",
+      "seed": 3101
+    },
+    "fit-scorecard": {
+      "atol": 0.001,
+      "inputs_code": "import pandas as pd\n\ndef frame(n, levels):\n    a = np.round(rng.lognormal(3.0, 0.8, n), 2)\n    b = np.where(rng.random(n) < 0.5, 0.0, np.round(rng.random(n), 3))\n    cat = rng.choice(levels, n)\n    logit = -3.5 + 0.015 * a + 2.0 * (b > 0.7) + 1.2 * (cat == \"D\")\n    y = (rng.random(n) < 1 / (1 + np.exp(-logit))).astype(int)\n    return pd.DataFrame({\"a\": a, \"b\": b, \"cat\": cat}), y\n\ntrain, labels = frame(4000, np.array([\"A\", \"B\", \"C\", \"D\"]))\n# The scored table: values beyond the training range, and a category\n# (\"E\") the training rows never had.\ntest, _ = frame(40, np.array([\"A\", \"B\", \"C\", \"D\", \"E\"]))\ntest.loc[:2, \"a\"] = [0.5, 900.0, 5000.0]\ninputs = (train, labels, test, [\"a\", \"b\"], [\"cat\"], 6)\n",
+      "kind": "exact",
+      "seed": 3505
+    },
+    "scorecard-points": {
+      "atol": 1e-06,
+      "inputs_code": "sizes = [5, 3, 4, 2]\nvar_of_bin = np.repeat(np.arange(4), sizes)\nwoe = rng.normal(0, 1.2, len(var_of_bin))\ncoef = -rng.uniform(0.2, 1.2, 4)\n# Anchors other than the lesson's: 600 points at fraud odds 1 to 30,\n# 50 points per doubling.\ninputs = (woe, var_of_bin, -4.2, coef, 600.0, 1 / 30, 50.0)\n",
+      "kind": "exact",
+      "seed": 3404
+    },
+    "tuned-gbm": {
+      "atol": 1e-06,
+      "inputs_code": "counts = rng.poisson(0.6, (42, 150)).ravel()\ndays = np.repeat(np.repeat(np.arange(42), 150), counts)\ncards = np.repeat(np.tile(np.arange(150), 42), counts)\nlabels = np.zeros(len(days), dtype=np.int64)\nfor d0 in range(42):\n    for card in rng.choice(150, 2, replace=False):\n        window = (cards == card) & (days >= d0) & (days < d0 + 6)\n        labels[window & (rng.random(len(days)) < 0.5)] = 1\n# One feature whose fraud signal drifts: frauds sit in both tails early\n# and mostly in the upper tail late, so the folds and the test weeks\n# disagree about the best histogram.\nshift = np.where(days < 30, rng.choice([-2.5, 2.5], len(days)), rng.choice([-1.0, 3.0], len(days)))\nx = rng.normal(0, 1, len(days)) + labels * shift\n\ndef fit_and_score(train_idx, cand):\n    n_bins, prior = cand\n    edges = np.quantile(x[train_idx], np.linspace(0, 1, n_bins + 1)[1:-1])\n    b = np.searchsorted(edges, x[train_idx])\n    rate = ((np.bincount(b, weights=labels[train_idx], minlength=n_bins) + prior * 0.05)\n            / (np.bincount(b, minlength=n_bins) + prior))\n    return rate[np.searchsorted(edges, x)] + 1e-6 * x\n\ngrid = [(n, p) for n in (1, 2, 4, 8, 32) for p in (0.5, 20.0)]\ninputs = (grid, 6, 11, fit_and_score, days, cards, labels, 30, 3, 5, 3, 4, 3)\n",
+      "kind": "exact",
+      "seed": 3606
+    },
+    "which-to-ship": {
+      "kind": "review"
+    },
+    "woe-iv": {
+      "atol": 1e-09,
+      "inputs_code": "genuine = rng.integers(50, 500, 8)\nfraud = rng.integers(1, 30, 8)\nfraud[3] = 0                     # a bin with no frauds: smoothing decides\ninputs = (genuine, fraud, 0.5)\n",
+      "kind": "exact",
+      "seed": 3202
+    }
+  },
+  "content_version": "2bab96fc92a26887adac8d3e4e0458759eaf192e94c4e18b9ca4f43a18e02e33",
+  "lab": "fraud-ml/scorecard-vs-gbm-lab"
+}

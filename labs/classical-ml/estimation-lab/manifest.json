@@ -1,0 +1,56 @@
+{
+  "checkpoints": {
+    "asymptotic-normality": {
+      "atol": 1e-09,
+      "inputs_code": "def sampler(n, rng):\n    return rng.exponential(2.0, n)\ndef estimator(y):\n    return float(np.mean(y))\ninputs = (sampler, estimator, 2.0, 0.25, [20, 200], 800, 7)\n",
+      "kind": "exact",
+      "seed": 8675
+    },
+    "claims-standard-errors": {
+      "kind": "metric",
+      "metric": "rmse",
+      "threshold": -0.03
+    },
+    "crlb-study": {
+      "atol": 1e-09,
+      "inputs_code": "# Exponential with mean 2, estimated by the sample mean: I(m) = 1/m^2,\n# so the floor is m^2/n and this estimator sits exactly on it. A study\n# needs no family, only something to draw with and something to run.\ndef sampler(n, rng):\n    return rng.exponential(2.0, n)\ndef estimator(y):\n    return float(np.mean(y))\ninputs = (sampler, estimator, 2.0, 0.25, 30, 500, 99)\n",
+      "kind": "exact",
+      "seed": 31337
+    },
+    "expected-information": {
+      "atol": 1e-09,
+      "inputs_code": "# The Gamma(2, mean) family again, so the reparameterization is not\n# the identity: eta = -2/m, and I(m) is not A''(eta).\nfrom types import SimpleNamespace\ngamma2 = SimpleNamespace(\n    name=\"Gamma(2, mean)\",\n    T=lambda y: y,\n    A=lambda e: -2.0 * np.log(-e),\n    dA=lambda e: -2.0 / e,\n    d2A=lambda e: 2.0 / e**2,\n    log_h=lambda y: np.log(y),\n    eta=lambda m: -2.0 / m,\n    d_eta=lambda m: 2.0 / m**2,\n    d2_eta=lambda m: -4.0 / m**3,\n)\ninputs = (gamma2, np.array([0.8, 3.0, 7.25]))\n",
+      "kind": "exact",
+      "seed": 909
+    },
+    "irregular-family": {
+      "kind": "review"
+    },
+    "loglik": {
+      "atol": 1e-08,
+      "inputs_code": "# A family the notebook never defines: Gamma with known shape 2,\n# parameterized by its MEAN m. p(y | m) = r^2 y e^{-r y} with r = 2/m,\n# so T(y) = y, eta = -2/m, A(eta) = -2 log(-eta), h(y) = y.\nfrom types import SimpleNamespace\ngamma2 = SimpleNamespace(\n    name=\"Gamma(2, mean)\",\n    T=lambda y: y,\n    A=lambda e: -2.0 * np.log(-e),\n    dA=lambda e: -2.0 / e,\n    d2A=lambda e: 2.0 / e**2,\n    log_h=lambda y: np.log(y),\n    eta=lambda m: -2.0 / m,\n    d_eta=lambda m: 2.0 / m**2,\n    d2_eta=lambda m: -4.0 / m**3,\n)\ny = rng.gamma(2.0, 1.5, size=40)\ninputs = (gamma2, np.array([1.2, 3.0, 5.5]), y)\n",
+      "kind": "exact",
+      "seed": 1337
+    },
+    "mle-newton": {
+      "atol": 1e-09,
+      "inputs_code": "from types import SimpleNamespace\ngamma2 = SimpleNamespace(\n    name=\"Gamma(2, mean)\",\n    T=lambda y: y,\n    A=lambda e: -2.0 * np.log(-e),\n    dA=lambda e: -2.0 / e,\n    d2A=lambda e: 2.0 / e**2,\n    log_h=lambda y: np.log(y),\n    eta=lambda m: -2.0 / m,\n    d_eta=lambda m: 2.0 / m**2,\n    d2_eta=lambda m: -4.0 / m**3,\n)\ny = rng.gamma(2.0, 1.5, size=60)\ninputs = (gamma2, y, 1.0)\n",
+      "kind": "exact",
+      "seed": 2718
+    },
+    "observed-information": {
+      "atol": 1e-08,
+      "inputs_code": "from types import SimpleNamespace\ngamma2 = SimpleNamespace(\n    name=\"Gamma(2, mean)\",\n    T=lambda y: y,\n    A=lambda e: -2.0 * np.log(-e),\n    dA=lambda e: -2.0 / e,\n    d2A=lambda e: 2.0 / e**2,\n    log_h=lambda y: np.log(y),\n    eta=lambda m: -2.0 / m,\n    d_eta=lambda m: 2.0 / m**2,\n    d2_eta=lambda m: -4.0 / m**3,\n)\n# Parameter values deliberately away from this sample's estimate: at the\n# estimate the score term vanishes and half the formula is untested.\ny = rng.gamma(2.0, 1.5, size=45)\ninputs = (gamma2, np.array([1.6, 4.5, 6.0]), y)\n",
+      "kind": "exact",
+      "seed": 5150
+    },
+    "score": {
+      "atol": 1e-08,
+      "inputs_code": "# Another family the notebook never defines: the geometric of the GLM\n# lesson's rewriting exercise, p(y | phi) = (1-phi)^{y-1} phi on\n# y = 1, 2, 3, ... \u2014 so eta = log(1-phi) and A(eta) = eta - log(1-e^eta).\nfrom types import SimpleNamespace\ngeom = SimpleNamespace(\n    name=\"Geometric(phi)\",\n    T=lambda y: y,\n    A=lambda e: e - np.log1p(-np.exp(e)),\n    dA=lambda e: 1.0 / (1.0 - np.exp(e)),\n    d2A=lambda e: np.exp(e) / (1.0 - np.exp(e)) ** 2,\n    log_h=lambda y: np.zeros_like(np.asarray(y, dtype=float)),\n    eta=lambda p: np.log1p(-p),\n    d_eta=lambda p: -1.0 / (1.0 - p),\n    d2_eta=lambda p: -1.0 / (1.0 - p) ** 2,\n)\ny = rng.geometric(0.3, size=50).astype(float)\ninputs = (geom, np.array([0.15, 0.3, 0.55]), y)\n",
+      "kind": "exact",
+      "seed": 4242
+    }
+  },
+  "content_version": "506aa616e0c8b6db356d9fcf3dc9e432d1a7bc5f6e4ce642f8237c1852e6d194",
+  "lab": "classical-ml/estimation-lab"
+}

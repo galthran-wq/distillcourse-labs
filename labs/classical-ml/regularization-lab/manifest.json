@@ -1,0 +1,51 @@
+{
+  "checkpoints": {
+    "beat-test-error": {
+      "holdout": "data/holdout_X.csv",
+      "kind": "metric",
+      "metric": "rmse",
+      "threshold": -0.72
+    },
+    "center-standardize": {
+      "atol": 1e-09,
+      "inputs_code": "# Deliberately wild scales and offsets: a standardizer that quietly\n# assumes clean inputs has nowhere to hide.\nX = rng.normal(size=(10, 4)) * np.array([1.0, 12.0, 0.3, 55.0]) + np.array([2.0, -30.0, 0.5, 400.0])\ny = rng.normal(2.5, 1.2, size=10)\ninputs = (X, y)\n",
+      "kind": "exact",
+      "seed": 101
+    },
+    "lasso-cd": {
+      "atol": 1e-06,
+      "inputs_code": "# A correlated predictor pair, so the penalty has a real routing\n# decision to make \u2014 the design the prostate data poses at full scale.\nX = rng.normal(size=(60, 8))\nX[:, 1] = 0.7 * X[:, 0] + 0.5 * X[:, 1]\nX = (X - X.mean(0)) / X.std(0)\ny = X @ np.array([2.0, 0.0, -1.5, 0.0, 0.0, 1.0, 0.0, 0.0]) + rng.normal(0.0, 0.5, size=60)\ny = y - y.mean()\ninputs = (X, y, np.array([0.7, 0.3, 0.1, 0.02]))\n",
+      "kind": "exact",
+      "seed": 505
+    },
+    "ols-solve": {
+      "atol": 1e-06,
+      "inputs_code": "X = rng.normal(size=(40, 6))\nX = (X - X.mean(0)) / X.std(0)\ny = X @ np.array([1.5, 0.0, -2.0, 0.5, 0.0, 1.0]) + rng.normal(0.0, 0.4, size=40)\ny = y - y.mean()\ninputs = (X, y)\n",
+      "kind": "exact",
+      "seed": 202
+    },
+    "prostate-table": {
+      "atol": 1e-06,
+      "inputs_code": "raw = np.loadtxt(\"data/prostate.csv\", delimiter=\",\", skiprows=1)\n# \u03bb = 23.12 solves df(\u03bb) = 5.0 on this design; \u03bb = 0.22 puts the\n# lasso's shrinkage factor s at 0.366 \u2014 the study's CV choices.\ninputs = (raw[:, :8], raw[:, 8], 23.12, 0.22)\n",
+      "kind": "exact",
+      "seed": 7
+    },
+    "ridge-svd": {
+      "atol": 1e-06,
+      "inputs_code": "X = rng.normal(size=(50, 6))\nX = (X - X.mean(0)) / X.std(0)\ny = X @ np.array([2.0, -1.0, 0.0, 0.5, 0.0, 1.5]) + rng.normal(0.0, 0.5, size=50)\ny = y - y.mean()\ninputs = (X, y, np.array([0.0, 1.0, 10.0, 100.0]))\n",
+      "kind": "exact",
+      "seed": 303
+    },
+    "soft-threshold": {
+      "atol": 1e-09,
+      "inputs_code": "z = rng.normal(0.0, 2.0, size=15)\nz = np.append(z, [0.0, 0.8, -0.8])   # the boundary cases, exactly\ninputs = (z, 0.8)\n",
+      "kind": "exact",
+      "seed": 404
+    },
+    "why-exact-zeros": {
+      "kind": "review"
+    }
+  },
+  "content_version": "b2e27ae8760816a4ab083013c114ec9ca04ae6de2c44cfe3966dc8c6f1249a68",
+  "lab": "classical-ml/regularization-lab"
+}

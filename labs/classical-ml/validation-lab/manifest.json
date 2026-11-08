@@ -1,0 +1,56 @@
+{
+  "checkpoints": {
+    "bootstrap-se": {
+      "atol": 1e-06,
+      "inputs_code": "mpg = np.loadtxt(\"data/auto.csv\", delimiter=\",\", skiprows=1)[:, 0]\ninputs = (mpg, np.median, 500, 7)\n",
+      "kind": "exact",
+      "seed": 333
+    },
+    "cv-score": {
+      "atol": 1e-06,
+      "inputs_code": "# A deterministic least-squares fit-callable: the checkpoint grades\n# the protocol around it, not the model inside it.\ndef fit_ls(Xtr, ytr):\n    A = np.column_stack([np.ones(len(Xtr)), Xtr])\n    coef = np.linalg.lstsq(A, ytr, rcond=None)[0]\n    return lambda Xv: np.column_stack([np.ones(len(Xv)), Xv]) @ coef\ndef mse_in(y_true, y_pred):\n    return float(np.mean((y_true - y_pred) ** 2))\nX = rng.normal(size=(40, 3))\ny = X @ np.array([1.0, -2.0, 0.5]) + rng.normal(size=40)\nfolds = rng.permutation(np.arange(40) % 5)\ninputs = (fit_ls, X, y, folds, mse_in)\n",
+      "kind": "exact",
+      "seed": 222
+    },
+    "kfold-indices": {
+      "atol": 1e-09,
+      "inputs_code": "# Imbalanced on purpose: 15 vs 8 with k=5 makes the stratification\n# and the remainder-dealing both visible in the output.\ny = np.repeat([0.0, 1.0], [15, 8])\nrng.shuffle(y)\ninputs = (y, 5, 11)\n",
+      "kind": "exact",
+      "seed": 111
+    },
+    "leakage-gap": {
+      "kind": "metric",
+      "metric": "rmse",
+      "threshold": -0.02
+    },
+    "nested-cv": {
+      "atol": 1e-09,
+      "inputs_code": "# The referee problem once more: the fully nested report should\n# straddle the 50% truth, and the picks expose the inner selection.\nX = rng.normal(size=(50, 5000))\ny = np.repeat([1.0, -1.0], 25)\ninputs = (X, y, [10, 25, 50, 100, 200], 5, 7)\n",
+      "kind": "exact",
+      "seed": 7
+    },
+    "one-se-rule": {
+      "atol": 1e-09,
+      "inputs_code": "# A U-shaped truth under uneven fold noise: the argmin sits in the\n# complex half, the band reaches well back toward simplicity, and\n# the per-column scatter varies enough to expose a mis-anchored band.\nbase = 0.55 + 0.25 * np.linspace(-1.0, 0.5, 12) ** 2\nscale = rng.uniform(0.05, 0.16, size=12)\ntbl = base + rng.normal(0.0, 1.0, size=(10, 12)) * scale\ninputs = (tbl,)\n",
+      "kind": "exact",
+      "seed": 401
+    },
+    "screen-then-cv": {
+      "atol": 1e-09,
+      "inputs_code": "# The ESL referee problem: pure noise, so the truth is 50% and the\n# expected output is the size of the leak.\nX = rng.normal(size=(50, 5000))\ny = np.repeat([1.0, -1.0], 25)\ninputs = (X, y, 100, 5, 8)\n",
+      "kind": "exact",
+      "seed": 8
+    },
+    "screen-within-cv": {
+      "atol": 1e-09,
+      "inputs_code": "# Same construction as screen-then-cv, fresh draw: the honest report\n# should sit near the 50% truth.\nX = rng.normal(size=(50, 5000))\ny = np.repeat([1.0, -1.0], 25)\ninputs = (X, y, 100, 5, 5)\n",
+      "kind": "exact",
+      "seed": 5
+    },
+    "why-the-gap": {
+      "kind": "review"
+    }
+  },
+  "content_version": "8d620754a1de4085f2f9d6ec97e8978b59cf629acdaad10cf78d4b063453b041",
+  "lab": "classical-ml/validation-lab"
+}

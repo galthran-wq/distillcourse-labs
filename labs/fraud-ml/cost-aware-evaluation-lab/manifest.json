@@ -1,0 +1,57 @@
+{
+  "checkpoints": {
+    "average-precision": {
+      "atol": 1e-09,
+      "inputs_code": "n = 2000\nlabels = (rng.random(n) < 0.03).astype(float)\nlabels[:3] = 1.0\n# Two-decimal scores: blocks of tied rows, so the tie rule is tested.\nscores = np.round(rng.beta(2, 5, n) + 0.3 * labels * rng.random(n), 2)\ninputs = (labels, scores)\n",
+      "kind": "exact",
+      "seed": 2101
+    },
+    "beat-holdout-week": {
+      "holdout": "data/holdout_week.csv.gz",
+      "kind": "metric",
+      "metric": "roc_auc",
+      "threshold": 0.85
+    },
+    "bmr-threshold": {
+      "atol": 1e-09,
+      "inputs_code": "n = 400\namounts = np.round(rng.lognormal(3.5, 1.3, n), 2)\n# Scores of a model that kept 3,000 of 59,700 genuine rows (beta ~ 5%).\np_s = rng.beta(0.6, 3, n)\nbeta = 3_000 / 59_700\nlabels = (rng.random(n) < beta * p_s / (beta * p_s - p_s + 1)).astype(np.int64)\nlabels[:3] = 1\ninputs = (amounts, labels, p_s, 300, 59_700, 3_000, np.array([1.0, 5.0, 20.0]))\n",
+      "kind": "exact",
+      "seed": 2505
+    },
+    "card-precision-top-k": {
+      "atol": 1e-09,
+      "inputs_code": "counts = rng.poisson(1.5, (7, 60)).ravel()\ndays = np.repeat(np.repeat(np.arange(7), 60), counts)\ncards = np.repeat(np.tile(np.arange(60), 7), counts)\ncompromised = np.isin(cards, rng.choice(60, 14, replace=False))\nlabels = (compromised & (rng.random(len(days)) < 0.5)).astype(np.int64)\nscores = rng.random(len(days)) + 0.6 * labels * rng.random(len(days))\nperm = rng.permutation(len(days))\ninputs = (days[perm], cards[perm], scores[perm], labels[perm], 4)\n",
+      "kind": "exact",
+      "seed": 2404
+    },
+    "prequential-selection": {
+      "atol": 1e-06,
+      "inputs_code": "counts = rng.poisson(0.6, (41, 150)).ravel()\ndays = np.repeat(np.repeat(np.arange(41), 150), counts)\ncards = np.repeat(np.tile(np.arange(150), 41), counts)\nlabels = np.zeros(len(days), dtype=np.int64)\nfor d0 in range(41):\n    for card in rng.choice(150, 2, replace=False):\n        window = (cards == card) & (days >= d0) & (days < d0 + 6)\n        labels[window & (rng.random(len(days)) < 0.5)] = 1\n# One feature, informative through its magnitude: frauds sit in both\n# tails. A candidate is a number of quantile bins of a histogram model.\nx = rng.normal(0, 1, len(days)) + labels * rng.choice([-2.5, 2.5], len(days))\n\ndef fit_and_score(train_idx, n_bins):\n    edges = np.quantile(x[train_idx], np.linspace(0, 1, n_bins + 1)[1:-1])\n    b = np.searchsorted(edges, x[train_idx])\n    rate = ((np.bincount(b, weights=labels[train_idx], minlength=n_bins) + 0.5)\n            / (np.bincount(b, minlength=n_bins) + 1.0))\n    return rate[np.searchsorted(edges, x)] + 1e-6 * x\n\ninputs = (days, cards, labels, [1, 2, 4, 8, 32], fit_and_score, 30, 3, 5, 3, 4, 3)\n",
+      "kind": "exact",
+      "seed": 2707
+    },
+    "prequential-split": {
+      "atol": 0.5,
+      "inputs_code": "n = 600\ndays = np.sort(rng.integers(0, 30, n))\ncards = rng.integers(0, 25, n)\nlabels = np.zeros(n, dtype=np.int64)\nfor card, first in zip(rng.choice(25, 14, replace=False), rng.integers(0, 26, 14)):\n    window = (cards == card) & (days >= first) & (days < first + 8)\n    labels[window & (rng.random(n) < 0.6)] = 1\ninputs = (days, cards, labels, 14, 3, 5, 3, 4)\n",
+      "kind": "exact",
+      "seed": 2304
+    },
+    "savings-metric": {
+      "atol": 1e-06,
+      "inputs_code": "n = 200\namounts = np.round(rng.lognormal(3.5, 1.0, n), 2)\nlabels = np.zeros(n, dtype=np.int64)\nfrauds = rng.choice(n, 6, replace=False)\nlabels[frauds] = 1\ndecisions = (rng.random(n) < 0.08).astype(np.int64)\ndecisions[frauds[:2]] = 1\n# \u20ac0.25 makes flagging everything the cheaper trivial policy; \u20ac5 and\n# \u20ac40 make it flagging nothing.\nc_a = np.array([0.25, 5.0, 40.0])\ninputs = (amounts, labels, decisions, c_a)\n",
+      "kind": "exact",
+      "seed": 2202
+    },
+    "undersampling-correction": {
+      "atol": 1e-09,
+      "inputs_code": "p_s = rng.random(50)\ninputs = (p_s, 0.5, 400, 49_600, 3_600)\n",
+      "kind": "exact",
+      "seed": 2606
+    },
+    "why-auc-spares-depth-50": {
+      "kind": "review"
+    }
+  },
+  "content_version": "06ff48ecec56d0c8c48093868a1166fa4ea2ec5467c2ded404ca515d0281efa2",
+  "lab": "fraud-ml/cost-aware-evaluation-lab"
+}
